@@ -2,6 +2,12 @@
  * This is a number convert program
  * */
 
+/*TODO:
+ * 1.  support the negative number
+ * 2.  support 64bit output
+ */ 
+
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -52,7 +58,7 @@
 
 /*bit map for saving the flag of command parameter*/
 char bit_map[MAP_LEN]; 
-//int bit_map = 8;
+int BinBitLen = 0;
 
 /*use to save the result*/
 typedef struct number{
@@ -62,12 +68,14 @@ typedef struct number{
 	u16  b_sshortHave;
 	u16  b_sintHave;
 	u16  b_slongHave;
+	u16  b_binHave;
 	u16  uShortNumber;
 	u32  uIntNumber;
 	u64  uLongNumber;
 	s16  sShortNumber;
 	s32  sIntNumber;
 	s64  sLongNumber;
+	char BinNumber[BIN_LEN];
 }ResultNum;
 
 typedef enum flags{
@@ -76,8 +84,9 @@ typedef enum flags{
 	  SHOW_SSIGN,
 	  SHOW_HEX,
 	  SHOW_OCT,
+	  SHOW_BIN,
 	  SHOW_HELP,
-	  SHOW_MAX=7,
+	  SHOW_MAX=8,
 }SetFlags;
 
 enum guess {MDec,MHex,MBin, BNum};
@@ -90,6 +99,7 @@ ResultNum g_res = {
     .b_sshortHave = 0,
     .b_sintHave = 0,
     .b_slongHave = 0,
+	.b_binHave = 0,
 };
 
 /*some functions difition*/
@@ -102,6 +112,7 @@ void show_help(void)
 	printf("a\t\tshow all convert type[default]\n");
 	printf("u\t\tshow unsigned decimal value converted from number\n");
 	printf("d\t\tshow signed decimal value conveted frome number\n");
+	printf("b\t\tshow the bin format of the number\n");
 	printf("h\t\tshow the hex format of the number\n");
 	printf("o\t\tshow the octet format of the number\n");
 	printf("H\t\tshow the help info\n");
@@ -136,25 +147,48 @@ void Print(int number)
 {
 	if(number == SHOW_ALL || number == SHOW_USIGN)
 	{
-		printf("Unsigned short: %d\n",g_res.uShortNumber);
-		printf("Unsigned int:   %d\n",g_res.uIntNumber);
+	  if(g_res.b_ushortHave == 1)
+		printf("Unsigned short: %-25u\n",g_res.uShortNumber);
+	  if(g_res.b_uintHave == 1)
+  		printf("Unsigned int:   %-25u\n",g_res.uIntNumber);
 	}
 	if(number == SHOW_ALL || number == SHOW_SSIGN)
 	{
-		printf("Signed short: %d\n",g_res.sShortNumber);
-		printf("Signed int:   %d\n",g_res.sIntNumber);
+	  if(g_res.b_sshortHave == 1)
+		printf("Signed short: %-25d\n",g_res.sShortNumber);
+	  if(g_res.b_sintHave == 1)
+  	    printf("Signed int:   %-25d\n",g_res.sIntNumber);
 	}
 	if(number == SHOW_ALL || number == SHOW_HEX)
 	{
-		printf("16bit Hex with sign:    %x\n",g_res.sShortNumber);
-		printf("16bit Hex without sign: %x\n",g_res.uShortNumber);
-		printf("32bit Hex:              %x\n",g_res.sIntNumber);
+	  if(g_res.b_sshortHave == 1)
+		printf("16bit Hex with sign:    %#-25x\n",g_res.sShortNumber);
+	  if(g_res.b_ushortHave == 1)
+        printf("16bit Hex without sign: %#-25x\n",g_res.uShortNumber);
+	  if(g_res.b_sintHave == 1)
+        printf("32bit Hex:              %#-25x\n",g_res.sIntNumber);
 	}
 
 	if(number == SHOW_ALL || number == SHOW_OCT)
 	{
-		printf("16bit OCT:    %x\n",g_res.sShortNumber);
-		printf("32bit OCT:    %x\n",g_res.sIntNumber);
+	  if(g_res.b_sshortHave == 1)
+		printf("16bit OCT:    %-25o\n",(g_res.sShortNumber&0xFFFF));
+	  if(g_res.b_sintHave == 1)
+		printf("32bit OCT:    %-25o\n",g_res.sIntNumber);
+	}
+
+	if(number == SHOW_ALL || number == SHOW_BIN)
+	{
+		if(g_res.b_binHave == 1)
+		{
+		  /*if bin bit len is not set, output 32bit number*/
+		  if(BinBitLen == 0)
+		  	printf("Binary nubmer is: %s\n", g_res.BinNumber);
+		  else{
+			BinBitLen = 32 - BinBitLen;
+		  	printf("Binary nubmer is: %s\n", g_res.BinNumber+BinBitLen);
+		  }
+		}
 	}
 }
 
@@ -179,6 +213,30 @@ void ResultSet(int result)
 
 }
 
+void DecToBin(int result)
+{
+	char *tempbit= (char *)malloc(32+1);
+	int i = 31;
+	int count = 0;
+	int temp; 
+
+	while(i >= 0)
+	{
+		temp = result >> i;
+
+		if(temp & 1)
+			*(tempbit+count) = 1 + '0';
+		else
+			*(tempbit+count) = 0 + '0';
+		i--;
+		count++;
+	}
+
+	*(tempbit+ count) = '\0';
+	g_res.b_binHave = 1;
+	strcpy(g_res.BinNumber,tempbit);
+}
+
 
 void DecConvert(char *raw, int len)
 {
@@ -191,6 +249,7 @@ void DecConvert(char *raw, int len)
 	result = mystrtol(p,10);
 
 	ResultSet(result);
+	DecToBin(result);
 
 }
 
@@ -212,9 +271,7 @@ void OctConvert(char *raw, int len)
 	result = mystrtol(p,8);
 	
 	ResultSet(result);
-
-	printf("%d\n",g_res.uShortNumber);
-	printf("%d\n",g_res.sShortNumber);
+	DecToBin(result);
 
 }
 
@@ -230,10 +287,6 @@ void BinConvert(char *raw, int len)
 
 	ResultSet(result);
 		
-	printf("%#x\n",g_res.sIntNumber);
-	printf("%#x\n",g_res.uIntNumber);
-
-
 }
 
 u16 Make_Assume(char *raw,int len)
@@ -402,9 +455,9 @@ void HexConvert(char *raw, int len)
 		}
 		g_res.b_uintHave = 1;
 		g_res.uIntNumber = (u32)result;  /*the type convert is must */
+	
 	}	
-
-
+		DecToBin(result);
 }
 
 
@@ -466,13 +519,15 @@ void ShowResult(char * bitmap, char *Rnumber, int len)
 	{
 		printf("Convert complete!\n");
 		printf("===== The result =====\n");
-		for( i = 1;i < 8;i++)
+		for( i = 1;i < 9;i++)
 		{
 			index = i >> 3;
 			val = i & 7;
 			if(GET_BIT(bit_map[index],val) == 1)
 			{
 				Print(i);
+				if(i == 1)  //if show all, no need to print other mode's result
+					break;
 			}
 		}
 	}else{
@@ -495,7 +550,7 @@ int main(int argc, char **argv)
 		exit(1);
 	}
 
-	while((ch = getopt(argc,argv,"audhoH")) != -1)
+	while((ch = getopt(argc,argv,"audb:hoH")) != -1)
 	{
 		switch(ch)
 		{
@@ -513,6 +568,10 @@ int main(int argc, char **argv)
 				break;
 			case 'o':
 				flag = SHOW_OCT;
+				break;
+			case 'b':
+				flag = SHOW_BIN;
+				BinBitLen = atoi(optarg);
 				break;
 			case 'H':
 				flag = SHOW_HELP;
@@ -534,5 +593,7 @@ int main(int argc, char **argv)
 	}
 
 	ShowResult(bit_map, argv[argc-1], strlen(argv[argc-1]));
+
+	return 0;
 }
 
