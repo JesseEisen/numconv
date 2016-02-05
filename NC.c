@@ -195,6 +195,19 @@ void Print(int number)
 
 void PrintAssume(u16 flag)
 {
+	switch(flag)
+	{
+		case MDec:
+		case MHex:
+		case MBin:
+				Print(1);
+				break;
+		case BNum:
+				printf("Sorry! convert failed\n");
+				break;
+		default:
+				printf("can not guess what your input!\n");
+	}
 
 }
 
@@ -497,7 +510,8 @@ int ConvertNumber(char *raw, int len)
 			else if(raw[0] == '0' && (raw[1] < '8'))
 					OctConvert(raw,len);
 			else{
-				fprintf(stderr,"Unkonw character for number! act the default option!\n");
+
+				fprintf(stderr,"Unkonw Type! Will assume it!\n");
 				ret = 1;
 			}
 			break;
