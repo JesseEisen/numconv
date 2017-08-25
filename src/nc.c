@@ -9,12 +9,54 @@
 #include <stdlib.h>
 #include <string.h>
 #include "commander/commander.h"
+#include "nc.h"
+
+options option = {
+	.toAll = 0,
+	.toDec = 0,
+	.toHex = 0,
+	.toOct = 0,
+	.toBin = 0,
+	.toSig = 0,
+};
 
 static void 
 nt_setopt_all(command_t *self)
 {
-    
+    option.toAll = NUMBER_TO_ALL;
 }
+
+static void 
+nt_setopt_bin(command_t *self)
+{
+	option.toBin = NUMBER_TO_BIN;
+}
+
+static void
+nt_setopt_dec(command_t *self)
+{
+	option.toDec = NUMBER_TO_DEC;
+}
+
+static void
+nt_setopt_oct(command_t *self)
+{
+	option.toOct = NUMBER_TO_OCT;
+}
+
+static void
+nt_setopt_sign(command_t *self)
+{
+	option.toSig = NUMBER_TO_SIG;
+
+}
+
+static void
+nt_setopt_hex(command_t *self)
+{
+	option.toHex = NUMBER_TO_HEX;
+}
+
 
 int
 main(int argc, char **argv)
@@ -43,9 +85,16 @@ main(int argc, char **argv)
             nt_setopt_hex);
     command_option(&cmd,
             "-o", "--oct <num>",
-            "convert number to octal format,
+            "convert number to octal format",
             nt_setopt_oct);
     command_parse(&cmd, argc, argv);
 
-
+	printf("%d %d %d %d %d %d\n",
+			option.toAll,
+			option.toBin,
+			option.toDec,
+			option.toHex,
+			option.toOct,
+			option.toSig);
+	return 0;
 }
