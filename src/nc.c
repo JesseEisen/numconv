@@ -11,56 +11,145 @@
 #include "commander/commander.h"
 #include "nc.h"
 
-options option = {
-    .toAll = 0,
-    .toDec = 0,
-    .toHex = 0,
-    .toOct = 0,
-    .toBin = 0,
-    .toSig = 0,
-};
+options        g_option;
+control_info_t g_ctrl = {0,{0},0,{0}};
+
+#define IDX_ADD_ONE(x)  do{ g_ctrl.index[g_ctrl.numOfOpt++] = (x); }while(0)
+#define IS_OPT_EXCEED   do{ if ( g_ctrl.numOfOpt >= MAX_OPTIONS ) \
+                            { c_print(COLOR_RED, "Too many options\n"); eixt(1); } \
+                        }while(0)
+
+void nt_init_optlist(void)
+{
+    INIT_LIST_HEAD(&(g_option.toAll));
+    INIT_LIST_HEAD(&(g_option.toDec));
+    INIT_LIST_HEAD(&(g_option.toHex));
+    INIT_LIST_HEAD(&(g_option.toOct));
+    INIT_LIST_HEAD(&(g_option.toBin));
+    INIT_LIST_HEAD(&(g_option.toSig));
+}
 
 static void 
 nt_setopt_all(command_t *self)
 {
-    option.toAll = NUMBER_TO_ALL;
+    option_info_t  all;
+    memset(&all,0,sizeof(option_info_t));
+
+    IS_OPT_EXCEED;
+    IDX_ADD_ONE(NUMBER_TO_ALL);
+    
+    all.oIndex = g_ctrl.numOfOpt - 1;
+    if(self->arg)
+    {
+        all.bHasArg = 1;
+        all.arg = self->arg;
+    }
+    
+    list_add(&(all.node), &(g_option.toAll));
 }
 
 static void 
 nt_setopt_bin(command_t *self)
 {
-    option.toBin = NUMBER_TO_BIN;
+    option_info_t  bin;
+    memset(&bin,0,sizeof(option_info_t));
+
+    IS_OPT_EXCEED;
+    IDX_ADD_ONE(NUMBER_TO_BIN);
+    
+    bin.oIndex = g_ctrl.numOfOpt - 1;
+    if(self->arg)
+    {
+        bin.bHasArg = 1;
+        bin.arg = self->arg;
+    }
+    
+    list_add(&(bin.node), &(g_option.toBin));
 }
 
 static void
 nt_setopt_dec(command_t *self)
 {
-    option.toDec = NUMBER_TO_DEC;
+    option_info_t  dec;
+    memset(&dec,0,sizeof(option_info_t));
+
+    IS_OPT_EXCEED;
+    IDX_ADD_ONE(NUMBER_TO_DEC);
+    
+    dec.oIndex = g_ctrl.numOfOpt - 1;
+    if(self->arg)
+    {
+        dec.bHasArg = 1;
+        dec.arg = self->arg;
+    }
+    
+    list_add(&(dec.node), &(g_option.toDec));
 }
 
 static void
 nt_setopt_oct(command_t *self)
 {
-    option.toOct = NUMBER_TO_OCT;
+    option_info_t  oct;
+    memset(&oct,0,sizeof(option_info_t));
+
+    IS_OPT_EXCEED;
+    IDX_ADD_ONE(NUMBER_TO_OCT);
+    
+    oct.oIndex = g_ctrl.numOfOpt - 1;
+    if(self->arg)
+    {
+        oct.bHasArg = 1;
+        oct.arg = self->arg;
+    }
+    
+    list_add(&(oct.node), &(g_option.toOct));
 }
 
 static void
 nt_setopt_sign(command_t *self)
 {
-    option.toSig = NUMBER_TO_SIG;
+    option_info_t  sig;
+    memset(&sig,0,sizeof(option_info_t));
+
+    IS_OPT_EXCEED;
+    IDX_ADD_ONE(NUMBER_TO_SIG);
+    
+    sig.oIndex = g_ctrl.numOfOpt - 1;
+    if(self->arg)
+    {
+        sig.bHasArg = 1;
+        sig.arg = self->arg;
+    }
+    
+    list_add(&(sig.node), &(g_option.toSig));
 
 }
 
 static void
 nt_setopt_hex(command_t *self)
 {
-    option.toHex = NUMBER_TO_HEX;
+    option_info_t  hex;
+    memset(&hex,0,sizeof(option_info_t));
+
+    IS_OPT_EXCEED;
+    IDX_ADD_ONE(NUMBER_TO_HEX);
+    
+    hex.oIndex = g_ctrl.numOfOpt - 1;
+    if(self->arg)
+    {
+        hex.bHasArg = 1;
+        hex.arg = self->arg;
+    }
+    
+    list_add(&(hex.node), &(g_option.toHex));
 }
 
 
 int
 main(int argc, char **argv)
 {
+    nt_init_optlist();
+   
     command_t cmd;
     command_init(&cmd,argv[0],"0.0.1");
     command_option(&cmd,
@@ -89,12 +178,5 @@ main(int argc, char **argv)
             nt_setopt_oct);
     command_parse(&cmd, argc, argv);
 
-    printf("%d %d %d %d %d %d\n",
-            option.toAll,
-            option.toBin,
-            option.toDec,
-            option.toHex,
-            option.toOct,
-            option.toSig);
     return 0;
 }
