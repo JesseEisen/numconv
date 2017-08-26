@@ -41,7 +41,7 @@ typedef struct {
 }option_info_t;
 
 
-typdef struct{
+typedef struct{
     u8  numOfOpt;
     u8  index[MAX_OPTIONS];
     u8  numOfNum;
