@@ -25,27 +25,15 @@ typedef enum {
 typedef unsigned char  u8;
 
 typedef struct {
-	struct list_head  toAll;
-	struct list_head  toDec;
-	struct list_head  toHex;
-	struct list_head  toOct;
-	struct list_head  toBin;
-	struct list_head  toSig;
-}options;
-
-typedef struct {
    struct list_head  node;
-   u8                oIndex;
-   u8                bHasarg;
+   u8                nIndex;
    char *            arg;
-}option_info_t;
+}number_info_t;
 
 
 typedef struct{
     u8  numOfOpt;
     u8  index[MAX_OPTIONS];
-    u8  numOfNum;
-    u8  number[MAX_NUMBERS];
 }control_info_t;
 
 #endif

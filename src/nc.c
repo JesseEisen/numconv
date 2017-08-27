@@ -14,66 +14,37 @@
 #include "strdup/strdup.h"
 #include "nc.h"
 
-options        g_option;
-control_info_t g_ctrl = {0,{0},0,{0}};
+struct list_head   g_numList;;
+control_info_t     g_ctrl = {0,{0}};
 
 #define IDX_ADD_ONE(x)  do{ g_ctrl.index[g_ctrl.numOfOpt++] = (x); }while(0)
 #define IS_OPT_EXCEED   do{ if ( g_ctrl.numOfOpt >= MAX_OPTIONS ) \
                             { c_print(COLOR_RED, "Too many options\n"); exit(1); } \
                         }while(0)
-#define RECORD_NUMBER_INDEX(x)  g_ctrl.number[g_ctrl.numOfNum++] = (x) 
 
 void 
 nt_init_optlist(void)
 {
-    INIT_LIST_HEAD(&(g_option.toAll));
-    INIT_LIST_HEAD(&(g_option.toDec));
-    INIT_LIST_HEAD(&(g_option.toHex));
-    INIT_LIST_HEAD(&(g_option.toOct));
-    INIT_LIST_HEAD(&(g_option.toBin));
-    INIT_LIST_HEAD(&(g_option.toSig));
+    INIT_LIST_HEAD(&g_numList);
 }
 
 static void
 nt_set_options( const char * arg, u8 type)
 {
-    option_info_t  info;
-    memset(&info,0,sizeof(option_info_t));
+    number_info_t  info;
+    memset(&info,0,sizeof(number_info_t));
 
     IS_OPT_EXCEED;
     IDX_ADD_ONE(type);
     
-    info.oIndex = g_ctrl.numOfOpt - 1;
+    info.nIndex = g_ctrl.numOfOpt - 1;
     if(arg)
     {
-        info.bHasarg = 1;
         info.arg = strdup(arg);
-        RECORD_NUMBER_INDEX(info.oIndex);
+        RECORD_NUMBER_INDEX(info.nIndex);
     }
     
-    switch(type) {
-        case NUMBER_TO_ALL:
-            list_add(&(info.node),&(g_option.toAll));
-            break;
-        case NUMBER_TO_HEX:
-            list_add(&(info.node),&(g_option.toHex));
-            break;
-        case NUMBER_TO_OCT:
-            list_add(&(info.node),&(g_option.toOct));
-            break;
-        case NUMBER_TO_DEC:
-            list_add(&(info.node),&(g_option.toDec));
-            break;
-        case NUMBER_TO_SIG:
-            list_add(&(info.node),&(g_option.toSig));
-            break;
-        case NUMBER_TO_BIN:
-            list_add(&(info.node),&(g_option.toBin));
-            break;
-        case NUMBER_MAX:
-            // nerver run here
-            break;
-    }
+    list_add(&(info->node), &g_numList);
 }
 
 static void 
@@ -146,15 +117,16 @@ main(int argc, char **argv)
             nt_setopt_oct);
     command_parse(&cmd, argc, argv);
 
-#if 0
+#if 1
     int i;
     for(i = 0; i < g_ctrl.numOfOpt; i++) {
         printf("%d\n",g_ctrl.index[i]);
     }
 
     printf("numbers:\n");
-    for(i = 0; i < g_ctrl.numOfNum; i++) {
-        printf("%d\n",g_ctrl.number[i]);
+    number_info_t *p;
+    list_for_each_entry(&p->node, g_numList,node) {
+        printf("%d: %s\n",p->nIndex, p->arg);
     }
 #endif 
     return 0;
