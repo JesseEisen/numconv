@@ -22,11 +22,20 @@ typedef enum {
     NUMBER_MAX
 }convert_type;
 
+typedef enum {
+    TYPE_DEC,
+    TYPE_HEX,
+    TYPE_BIN,
+    TYPE_OCT,
+    TYPE_MAX
+}number_type;
+
 typedef unsigned char  u8;
 
 typedef struct {
    struct list_head  node;
    u8                nIndex;
+   number_type       numType;
    char *            arg;
 }number_info_t;
 

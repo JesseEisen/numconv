@@ -8,6 +8,8 @@
 #ifndef _LIST_H__
 #define _LIST_H__
 
+#include <stddef.h>
+
 #undef offsetof
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 
@@ -60,9 +62,14 @@ void list_del(struct list_head *entry)
     entry->prev = LIST_POISON2;
 }
 
+#if 0
 #define container_of(ptr, type, member) ({                      \
             const typeof( ((type *)0)->member ) *__mptr = (ptr);    \
             (type *)( (char *)__mptr - offsetof(type,member) );})
+#endif 
+
+#define container_of(ptr, type, member) \
+      ((type *) ((char *) (ptr) - offsetof(type, member)))
 
 #define list_entry(ptr, type, member) \
     container_of(ptr, type, member)

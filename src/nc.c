@@ -10,17 +10,21 @@
 #include <string.h>
 #include "commander/commander.h"
 #include "c_print/c_print.h"
-#include "list/list.h"
+#include "number/number.h"
 #include "strdup/strdup.h"
+#include "list/list.h"
 #include "nc.h"
 
 struct list_head   g_numList;;
 control_info_t     g_ctrl = {0,{0}};
+u8                 g_lastNum = 0;  /*last number index*/
 
-#define IDX_ADD_ONE(x)  do{ g_ctrl.index[g_ctrl.numOfOpt++] = (x); }while(0)
+#define IDX_ADD_ONE(x)  do{ g_ctrl.index[g_ctrl.numOfOpt] = x; }while(0)
 #define IS_OPT_EXCEED   do{ if ( g_ctrl.numOfOpt >= MAX_OPTIONS ) \
                             { c_print(COLOR_RED, "Too many options\n"); exit(1); } \
                         }while(0)
+
+#define UNUSED(x)    do{ if(x){} }while(0)
 
 void 
 nt_init_optlist(void)
@@ -28,24 +32,48 @@ nt_init_optlist(void)
     INIT_LIST_HEAD(&g_numList);
 }
 
-static void
-nt_set_options( const char * arg, u8 type)
+static number_type
+nt_get_number_type(char *numStr)
 {
-    number_info_t  info;
-    memset(&info,0,sizeof(number_info_t));
+    if(is_bin(numStr,1)) {
+        return TYPE_BIN;
+    } else if (is_dec(numStr)) {
+        return TYPE_DEC;
+    } else if (is_oct(numStr)) {
+        return TYPE_OCT;
+    } else if (is_hex(numStr)) {
+        return TYPE_HEX;
+    } else {
+        return TYPE_MAX;
+    }
+    
+
+    /* never run here*/
+    return TYPE_MAX;
+}
+
+static void
+nt_set_options(const char * arg, u8 type)
+{
+    number_info_t*  info;
+    
+    info = malloc(sizeof(number_info_t));
+    if(!info)  return;
 
     IS_OPT_EXCEED;
     IDX_ADD_ONE(type);
     
-    info.nIndex = g_ctrl.numOfOpt - 1;
     if(arg)
     {
-        info.arg = strdup(arg);
-        RECORD_NUMBER_INDEX(info.nIndex);
+        info->nIndex  = g_ctrl.numOfOpt;
+        info->arg     = strdup(arg);
+        info->numType = nt_get_number_type(info->arg); 
     }
     
-    list_add(&(info->node), &g_numList);
+    g_ctrl.numOfOpt++;
+    list_add(&info->node, &g_numList);
 }
+
 
 static void 
 nt_setopt_all(command_t *self)
@@ -83,13 +111,89 @@ nt_setopt_hex(command_t *self)
     nt_set_options(self->arg, NUMBER_TO_HEX);
 }
 
+#define A_TO_B(Src,src, dst) \
+    case TYPE_##Src: res = src##_to_##dst(num); break
+
+static void
+convert_to_dec(char *num, number_type type) 
+{
+    int res;
+    switch (type) {
+        A_TO_B(BIN,bin,dec);
+        A_TO_B(HEX,bin,dec);
+        A_TO_B(OCT,bin,dec);
+        A_TO_B(DEC,bin,dec);
+        case TYPE_MAX:
+            return;
+    }
+
+   UNUSED(res); 
+}
+
+static void
+convert_to_hex(char *num, number_type type)
+{
+
+}
+
+static void
+convert_to_bin(char *num, number_type tyep)
+{
+
+}
+
+static void
+convert_to_oct(char *num, number_type type)
+{
+
+}
+
+static void
+convert_to_sig(char *num, number_type type)
+{
+
+}
+
+static void
+convert_to_all(char *num, number_type type)
+{
+
+}
+
+
+#define  CONVERT_FUNC(X,x)  \
+    case NUMBER_TO_##X: convert_to_##x(ni->arg, ni->numType); break
+
+static void
+nt_number_convert(number_info_t *ni)
+{
+     int i;
+
+     for(i = g_lastNum; i <= ni->nIndex; i++)
+     {
+         switch(g_ctrl.index[i]) {
+             CONVERT_FUNC(ALL,all);
+             CONVERT_FUNC(DEC,dec);
+             CONVERT_FUNC(HEX,hex);
+             CONVERT_FUNC(BIN,bin);
+             CONVERT_FUNC(OCT,oct);
+             CONVERT_FUNC(SIG,sig);
+             case NUMBER_MAX: 
+                return;
+         }
+     }
+
+     g_lastNum = ni->nIndex + 1;
+}
 
 int
 main(int argc, char **argv)
 {
+    command_t     cmd;
+    number_info_t *p;
+    
     nt_init_optlist();
-   
-    command_t cmd;
+
     command_init(&cmd,argv[0],"0.0.1");
     command_option(&cmd,
             "-a","--all <num>",
@@ -117,17 +221,9 @@ main(int argc, char **argv)
             nt_setopt_oct);
     command_parse(&cmd, argc, argv);
 
-#if 1
-    int i;
-    for(i = 0; i < g_ctrl.numOfOpt; i++) {
-        printf("%d\n",g_ctrl.index[i]);
+    list_for_each_entry(p, &g_numList,node) {
+          nt_number_convert(p);     
     }
-
-    printf("numbers:\n");
-    number_info_t *p;
-    list_for_each_entry(&p->node, g_numList,node) {
-        printf("%d: %s\n",p->nIndex, p->arg);
-    }
-#endif 
+    
     return 0;
 }
