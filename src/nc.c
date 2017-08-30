@@ -125,7 +125,8 @@ convert_to_dec(char *num, number_type type)
     }
 
    if(g_bDecPrint) {
-     c_print(COLOR_MAGENTA,"%15s: %d\n","DECIMAL",res);
+     c_print(COLOR_BLUE,"%15s: ","DECIMAL");
+     printf("%d\n",res);
    }
 
    return res;
@@ -140,7 +141,8 @@ convert_to_hex(char *num, number_type type)
     res = convert_to_dec(num,type);
     g_bDecPrint = 1;
 
-    c_print(COLOR_MAGENTA, "%15s: %#x\n","HEXADECIMAL", res);
+    c_print(COLOR_BLUE, "%15s: ","HEXADECIMAL");
+    printf("%#x\n", res);
 }
 
 static void
@@ -155,7 +157,8 @@ convert_to_bin(char *num, number_type type)
 
     res = dec_to_bin(tmp);
 
-    c_print(COLOR_MAGENTA, "%15s: %s\n", "BINARY", res);
+    c_print(COLOR_BLUE, "%15s: ", "BINARY");
+    printf("%s\n",res);
 
     free(res);
 }
@@ -168,7 +171,8 @@ convert_to_oct(char *num, number_type type)
     res = convert_to_dec(num,type);
     g_bDecPrint = 1;
 
-    c_print(COLOR_MAGENTA, "%15s: %0o\n", "OCTAL",res);
+    c_print(COLOR_BLUE, "%15s: ", "OCTAL");
+    printf("0%o\n",res);
 }
 
 
@@ -190,7 +194,7 @@ nt_number_convert(number_info_t *ni)
 {
      int i;
     
-     c_print(COLOR_GREY,"\n%5s - %3s\n\n","RAW", ni->arg);
+     c_print(COLOR_GREY,"\n%5s - %3s\n","RAW", ni->arg);
    
      // if all  is set, ignore other flags 
      for(i = g_lastNum; i <= ni->nIndex; i++) {
@@ -253,7 +257,7 @@ main(int argc, char **argv)
     }
     
     for(int i = 0; i < cmd.argc; ++i) {
-        c_print(COLOR_GREY,"\n%5s - %3s\n\n","RAW", cmd.argv[i]);
+        c_print(COLOR_GREY,"\n%5s - %3s\n","RAW", cmd.argv[i]);
         convert_to_all(cmd.argv[i], nt_get_number_type(cmd.argv[i]));
     }
    
