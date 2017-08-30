@@ -17,6 +17,7 @@ typedef enum
     COLOR_BLUE,
     COLOR_MAGENTA,
     COLOR_CYAN,
+    COLOR_GREY,
     COLOR_NORMAL,
     COLOR_MAX
 }ColorCode;

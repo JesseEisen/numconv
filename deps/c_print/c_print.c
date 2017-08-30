@@ -18,6 +18,7 @@ static char *g_color[] = {
     "\x1b[34m", /*blud*/
     "\x1b[35m", /*magenta*/
     "\x1b[36m", /*cyan*/
+    "\x1b[90m", /* light grey*/
     "\x1b[0m" , /*normal*/
 };
 

@@ -15,9 +15,11 @@
 #include "list/list.h"
 #include "nc.h"
 
-struct list_head   g_numList;;
+struct list_head   g_numList;
+struct list_head   g_resList;
 control_info_t     g_ctrl = {0,{0}};
 u8                 g_lastNum = 0;  /*last number index*/
+u8                 g_bDecPrint = 1;
 
 #define IDX_ADD_ONE(x)  do{ g_ctrl.index[g_ctrl.numOfOpt] = x; }while(0)
 #define IS_OPT_EXCEED   do{ if ( g_ctrl.numOfOpt >= MAX_OPTIONS ) \
@@ -30,6 +32,7 @@ void
 nt_init_optlist(void)
 {
     INIT_LIST_HEAD(&g_numList);
+    INIT_LIST_HEAD(&g_resList);
 }
 
 static number_type
@@ -68,10 +71,10 @@ nt_set_options(const char * arg, u8 type)
         info->nIndex  = g_ctrl.numOfOpt;
         info->arg     = strdup(arg);
         info->numType = nt_get_number_type(info->arg); 
+        list_add(&info->node, &g_numList);
     }
     
     g_ctrl.numOfOpt++;
-    list_add(&info->node, &g_numList);
 }
 
 
@@ -114,38 +117,64 @@ nt_setopt_hex(command_t *self)
 #define A_TO_B(Src,src, dst) \
     case TYPE_##Src: res = src##_to_##dst(num); break
 
-static void
+static int
 convert_to_dec(char *num, number_type type) 
 {
     int res;
     switch (type) {
         A_TO_B(BIN,bin,dec);
-        A_TO_B(HEX,bin,dec);
-        A_TO_B(OCT,bin,dec);
-        A_TO_B(DEC,bin,dec);
+        A_TO_B(HEX,hex,dec);
+        A_TO_B(OCT,oct,dec);
+        A_TO_B(DEC,dec,dec);
         case TYPE_MAX:
-            return;
+            return -1;
     }
 
-   UNUSED(res); 
+   if(g_bDecPrint) {
+     c_print(COLOR_MAGENTA,"%15s: %d\n","DECIMAL",res);
+   }
+
+   return res;
 }
 
 static void
 convert_to_hex(char *num, number_type type)
 {
+    int res;
+   
+    g_bDecPrint = 0;
+    res = convert_to_dec(num,type);
+    g_bDecPrint = 1;
 
+    c_print(COLOR_MAGENTA, "%15s: %#x\n","HEXADECIMAL", res);
 }
 
 static void
-convert_to_bin(char *num, number_type tyep)
+convert_to_bin(char *num, number_type type)
 {
+    int   tmp;
+    char *res;
+    
+    g_bDecPrint = 0;
+    tmp = convert_to_dec(num, type);
+    g_bDecPrint = 1;
 
+    res = dec_to_bin(tmp);
+
+    c_print(COLOR_MAGENTA, "%15s: %s\n", "BINARY", res);
+
+    free(res);
 }
 
 static void
 convert_to_oct(char *num, number_type type)
 {
+    int res;
+    g_bDecPrint = 0;
+    res = convert_to_dec(num,type);
+    g_bDecPrint = 1;
 
+    c_print(COLOR_MAGENTA, "%15s: %0o\n", "OCTAL",res);
 }
 
 static void
@@ -157,7 +186,10 @@ convert_to_sig(char *num, number_type type)
 static void
 convert_to_all(char *num, number_type type)
 {
-
+    convert_to_dec(num, type);
+    convert_to_hex(num, type);
+    convert_to_oct(num, type);
+    convert_to_bin(num, type);
 }
 
 
@@ -168,16 +200,26 @@ static void
 nt_number_convert(number_info_t *ni)
 {
      int i;
+    
+     c_print(COLOR_GREY,"\n%5s - %3s\n\n","RAW", ni->arg);
+     // if all  is set, ignore other flags 
+     for(i = g_lastNum; i <= ni->nIndex; i++) {
+        if(g_ctrl.index[i] == NUMBER_TO_ALL) {
+            convert_to_all(ni->arg, ni->numType);
+            g_lastNum = ni->nIndex + 1;
+            return;
+        }
+     }
 
      for(i = g_lastNum; i <= ni->nIndex; i++)
      {
          switch(g_ctrl.index[i]) {
-             CONVERT_FUNC(ALL,all);
              CONVERT_FUNC(DEC,dec);
              CONVERT_FUNC(HEX,hex);
              CONVERT_FUNC(BIN,bin);
              CONVERT_FUNC(OCT,oct);
              CONVERT_FUNC(SIG,sig);
+             case NUMBER_TO_ALL:
              case NUMBER_MAX: 
                 return;
          }
@@ -212,7 +254,7 @@ main(int argc, char **argv)
             "convert number to signed decimal fromat",
             nt_setopt_sign);
     command_option(&cmd,
-            "-h", "--hex [num]",
+            "-H", "--hex [num]",
             "convert number to hex format",
             nt_setopt_hex);
     command_option(&cmd,
@@ -221,9 +263,10 @@ main(int argc, char **argv)
             nt_setopt_oct);
     command_parse(&cmd, argc, argv);
 
-    list_for_each_entry(p, &g_numList,node) {
+    list_for_each_entry_reverse(p, &g_numList,node) {
           nt_number_convert(p);     
     }
     
+    printf("\n");
     return 0;
 }

@@ -8,7 +8,7 @@ SRC  = $(wildcard src/*.c)
 DEPS = $(wildcard deps/*/*.c)
 OBJS = $(DEPS:.c=.o)
 
-CFLAGS = -Ideps -Wall
+CFLAGS = -Ideps -Wall -g
 
 all: $(BINS)
 
