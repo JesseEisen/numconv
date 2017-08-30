@@ -45,13 +45,4 @@ typedef struct{
     u8  index[MAX_OPTIONS];
 }control_info_t;
 
-typedef struct {
-    struct list_head node;
-    number_type      numType;
-    union {
-      int              res;
-      char             *bin;
-    };
-}convert_res;
-
 #endif

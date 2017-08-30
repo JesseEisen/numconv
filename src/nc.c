@@ -202,6 +202,7 @@ nt_number_convert(number_info_t *ni)
      int i;
     
      c_print(COLOR_GREY,"\n%5s - %3s\n\n","RAW", ni->arg);
+   
      // if all  is set, ignore other flags 
      for(i = g_lastNum; i <= ni->nIndex; i++) {
         if(g_ctrl.index[i] == NUMBER_TO_ALL) {
