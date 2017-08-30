@@ -103,12 +103,6 @@ nt_setopt_oct(command_t *self)
 }
 
 static void
-nt_setopt_sign(command_t *self)
-{
-    nt_set_options(self->arg, NUMBER_TO_SIG);
-}
-
-static void
 nt_setopt_hex(command_t *self)
 {
     nt_set_options(self->arg, NUMBER_TO_HEX);
@@ -177,11 +171,6 @@ convert_to_oct(char *num, number_type type)
     c_print(COLOR_MAGENTA, "%15s: %0o\n", "OCTAL",res);
 }
 
-static void
-convert_to_sig(char *num, number_type type)
-{
-
-}
 
 static void
 convert_to_all(char *num, number_type type)
@@ -219,7 +208,6 @@ nt_number_convert(number_info_t *ni)
              CONVERT_FUNC(HEX,hex);
              CONVERT_FUNC(BIN,bin);
              CONVERT_FUNC(OCT,oct);
-             CONVERT_FUNC(SIG,sig);
              case NUMBER_TO_ALL:
              case NUMBER_MAX: 
                 return;
@@ -251,10 +239,6 @@ main(int argc, char **argv)
             "convert number to unsigned decimal format",
             nt_setopt_dec);
     command_option(&cmd,
-            "-s", "--sign [num]",
-            "convert number to signed decimal fromat",
-            nt_setopt_sign);
-    command_option(&cmd,
             "-H", "--hex [num]",
             "convert number to hex format",
             nt_setopt_hex);
@@ -268,6 +252,11 @@ main(int argc, char **argv)
           nt_number_convert(p);     
     }
     
+    for(int i = 0; i < cmd.argc; ++i) {
+        c_print(COLOR_GREY,"\n%5s - %3s\n\n","RAW", cmd.argv[i]);
+        convert_to_all(cmd.argv[i], nt_get_number_type(cmd.argv[i]));
+    }
+   
     printf("\n");
     return 0;
 }

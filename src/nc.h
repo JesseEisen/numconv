@@ -17,7 +17,6 @@ typedef enum {
     NUMBER_TO_HEX,
     NUMBER_TO_OCT,
     NUMBER_TO_DEC,
-    NUMBER_TO_SIG,
     NUMBER_TO_BIN,
     NUMBER_MAX
 }convert_type;
