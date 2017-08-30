@@ -2,6 +2,8 @@
 
 This is a small tool to convert number to different formats. 
 
+![show](./static/show.png)
+
 ## Generate
 
 We will build it with flag `-std=gnu99`, cause we use some uitility that c99 does not support.

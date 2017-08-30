@@ -38,14 +38,14 @@ nt_init_optlist(void)
 static number_type
 nt_get_number_type(char *numStr)
 {
-    if(is_bin(numStr,1)) {
-        return TYPE_BIN;
-    } else if (is_dec(numStr)) {
+    if (is_dec(numStr)) {
         return TYPE_DEC;
     } else if (is_oct(numStr)) {
         return TYPE_OCT;
     } else if (is_hex(numStr)) {
         return TYPE_HEX;
+    } else if (is_bin(numStr,1)) {
+        return TYPE_BIN;
     } else {
         return TYPE_MAX;
     }
@@ -63,16 +63,21 @@ nt_set_options(const char * arg, u8 type)
     info = malloc(sizeof(number_info_t));
     if(!info)  return;
 
-    IS_OPT_EXCEED;
-    IDX_ADD_ONE(type);
-    
     if(arg)
     {
         info->nIndex  = g_ctrl.numOfOpt;
         info->arg     = strdup(arg);
         info->numType = nt_get_number_type(info->arg); 
-        list_add(&info->node, &g_numList);
+        if(info->numType == TYPE_MAX) {
+            c_print(COLOR_CYAN,"\n%23s: %s!\n", "Invalid number format", arg);
+            return;
+        } 
+       list_add(&info->node, &g_numList);
+        
     }
+    
+    IS_OPT_EXCEED;
+    IDX_ADD_ONE(type);
     
     g_ctrl.numOfOpt++;
 }
@@ -154,7 +159,7 @@ convert_to_bin(char *num, number_type type)
     g_bDecPrint = 0;
     tmp = convert_to_dec(num, type);
     g_bDecPrint = 1;
-
+    
     res = dec_to_bin(tmp);
 
     c_print(COLOR_BLUE, "%15s: ", "BINARY");
