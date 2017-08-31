@@ -149,6 +149,7 @@ convert_to_hex(char *num, number_type type)
 
     c_print(COLOR_BLUE, "%15s: ","HEXADECIMAL");
     printf("%#x\n", res);
+
 }
 
 static void
@@ -179,6 +180,7 @@ convert_to_oct(char *num, number_type type)
 
     c_print(COLOR_BLUE, "%15s: ", "OCTAL");
     printf("0%o\n",res);
+    
 }
 
 
@@ -239,6 +241,7 @@ main(int argc, char **argv)
 {
     command_t     cmd;
     number_info_t *p;
+    number_info_t *temp;
     
     nt_init_optlist();
 
@@ -266,14 +269,21 @@ main(int argc, char **argv)
     command_parse(&cmd, argc, argv);
 
     list_for_each_entry_reverse(p, &g_numList,node) {
-          nt_number_convert(p);     
+          nt_number_convert(p); 
     }
     
     for(int i = 0; i < cmd.argc; ++i) {
         c_print(COLOR_GREY,"\n%5s - %3s\n","RAW", cmd.argv[i]);
         convert_to_all(cmd.argv[i], nt_get_number_type(cmd.argv[i]));
     }
-   
+    
+    list_for_each_entry_safe(p, temp, &g_numList,node) {
+        list_del(&p->node);
+        free(p->arg);
+        free(p);
+    }
+
+    command_free(&cmd);
     printf("\n");
     return 0;
 }
