@@ -40,6 +40,7 @@ typedef struct {
 
 
 typedef struct{
+    u8  amountOfNum;
     u8  numOfOpt;
     u8  index[MAX_OPTIONS];
 }control_info_t;

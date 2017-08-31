@@ -17,7 +17,7 @@
 
 struct list_head   g_numList;
 struct list_head   g_resList;
-control_info_t     g_ctrl = {0,{0}};
+control_info_t     g_ctrl = {0,0,{0}};
 u8                 g_lastNum = 0;  /*last number index*/
 u8                 g_bDecPrint = 1;
 
@@ -65,6 +65,7 @@ nt_set_options(const char * arg, u8 type)
 
     if(arg)
     {
+        g_ctrl.amountOfNum++;
         info->nIndex  = g_ctrl.numOfOpt;
         info->arg     = strdup(arg);
         info->numType = nt_get_number_type(info->arg); 
@@ -198,9 +199,16 @@ static void
 nt_number_convert(number_info_t *ni)
 {
      int i;
-    
+     u8  end; 
+
      c_print(COLOR_GREY,"\n%5s - %3s\n","RAW", ni->arg);
-   
+    
+     if(g_ctrl.amountOfNum == 1) {
+        end = g_ctrl.numOfOpt - 1;
+     } else {
+        end = ni->nIndex;
+     }
+
      // if all  is set, ignore other flags 
      for(i = g_lastNum; i <= ni->nIndex; i++) {
         if(g_ctrl.index[i] == NUMBER_TO_ALL) {
@@ -210,7 +218,7 @@ nt_number_convert(number_info_t *ni)
         }
      }
 
-     for(i = g_lastNum; i <= ni->nIndex; i++)
+     for(i = g_lastNum; i <= end; i++)
      {
          switch(g_ctrl.index[i]) {
              CONVERT_FUNC(DEC,dec);
