@@ -1,0 +1,56 @@
+.
+.TH "NC" "1" "November 2017" "" ""
+.
+.SH "NAME"
+\fBNC\fR \- number converting
+.
+.SH "SYNOPSIS"
+\fB<nc>\fR [\-abdHohsV] \fInum\fR
+.
+.SH "DESCRIPTION"
+Convert a number into given format\. And show in command line
+.
+.SH "EXAMPLE"
+Convert two different numbers into binary
+.
+.IP "" 4
+.
+.nf
+
+$ \./nc \-b 123 \-b 0x123
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Convert a decimal to other three different format
+.
+.IP "" 4
+.
+.nf
+
+$ \./nc \-a 123
+.
+.fi
+.
+.IP "" 0
+.
+.P
+Convert negative number to other format
+.
+.IP "" 4
+.
+.nf
+
+$ \./nc \-a \-\- \-5
+.
+.fi
+.
+.IP "" 0
+.
+.SH "AUTHOR"
+Written by JesseChen <\fIlkchan0719@gmail\.com\fR>
+.
+.SH "SEE ALSO"
+bc(1)
