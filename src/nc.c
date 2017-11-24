@@ -20,6 +20,8 @@ struct list_head   g_resList;
 control_info_t     g_ctrl = {0,0,{0}};
 u8                 g_lastNum = 0;  /*last number index*/
 u8                 g_bDecPrint = 1;
+u8                 g_bsigned = 0;
+u8                 g_bits = 32;
 
 #define IDX_ADD_ONE(x)  do{ g_ctrl.index[g_ctrl.numOfOpt] = x; }while(0)
 #define IS_OPT_EXCEED   do{ if ( g_ctrl.numOfOpt >= MAX_OPTIONS ) \
@@ -109,6 +111,16 @@ nt_setopt_oct(command_t *self)
 }
 
 static void
+nt_setopt_signed(command_t *self)
+{
+    g_bsigned = 1;
+    if(self->arg)
+    {
+        g_bits = atoi(self->arg);
+    }
+}
+
+static void
 nt_setopt_hex(command_t *self)
 {
     nt_set_options(self->arg, NUMBER_TO_HEX);
@@ -132,7 +144,7 @@ convert_to_dec(char *num, number_type type)
 
    if(g_bDecPrint) {
      c_print(COLOR_BLUE,"%15s: ","DECIMAL");
-     printf("%d\n",res);
+     printf(" %d\n",res);
    }
 
    return res;
@@ -148,7 +160,7 @@ convert_to_hex(char *num, number_type type)
     g_bDecPrint = 1;
 
     c_print(COLOR_BLUE, "%15s: ","HEXADECIMAL");
-    printf("%#x\n", res);
+    printf(" %#x\n", res);
 
 }
 
@@ -157,15 +169,33 @@ convert_to_bin(char *num, number_type type)
 {
     int   tmp;
     char *res;
+    int   i;
     
     g_bDecPrint = 0;
     tmp = convert_to_dec(num, type);
-    g_bDecPrint = 1;
     
-    res = dec_to_bin(tmp);
-
     c_print(COLOR_BLUE, "%15s: ", "BINARY");
-    printf("%s\n",res);
+    
+    if(g_bsigned || num[0] == '-')
+    {
+        g_bDecPrint = 1;
+        res = hex_to_bin(tmp);
+        for(i = 32 - g_bits; i < 32; i++)
+        {
+            if(i % 4 == 0)
+            {
+                printf(" ");
+            }
+            printf("%c", res[i]);
+        }
+    }
+    else 
+    {
+        g_bDecPrint = 1;
+        res = dec_to_bin(tmp);
+        printf(" %s\n",res);
+    }
+
 
     free(res);
 }
@@ -179,7 +209,7 @@ convert_to_oct(char *num, number_type type)
     g_bDecPrint = 1;
 
     c_print(COLOR_BLUE, "%15s: ", "OCTAL");
-    printf("0%o\n",res);
+    printf(" 0%o\n",res);
     
 }
 
@@ -210,7 +240,7 @@ nt_number_convert(number_info_t *ni)
      } else {
         end = ni->nIndex;
      }
-
+    
      // if all  is set, ignore other flags 
      for(i = g_lastNum; i <= ni->nIndex; i++) {
         if(g_ctrl.index[i] == NUMBER_TO_ALL) {
@@ -242,7 +272,8 @@ main(int argc, char **argv)
     command_t     cmd;
     number_info_t *p;
     number_info_t *temp;
-    
+    int            ntype;
+
     nt_init_optlist();
 
     command_init(&cmd,argv[0],"0.0.1");
@@ -266,6 +297,10 @@ main(int argc, char **argv)
             "-o", "--oct [num]",
             "convert number to octal format",
             nt_setopt_oct);
+    command_option(&cmd,
+            "-s", "--signed [num]",
+            "treat number as signed and set output bits",
+            nt_setopt_signed);
     command_parse(&cmd, argc, argv);
 
     list_for_each_entry_reverse(p, &g_numList,node) {
@@ -274,7 +309,11 @@ main(int argc, char **argv)
     
     for(int i = 0; i < cmd.argc; ++i) {
         c_print(COLOR_GREY,"\n%5s - %3s\n","RAW", cmd.argv[i]);
-        convert_to_all(cmd.argv[i], nt_get_number_type(cmd.argv[i]));
+        if((ntype = nt_get_number_type(cmd.argv[i])) == TYPE_MAX) {
+            c_print(COLOR_CYAN,"\n%23s: %s!\n", "Invalid number format", cmd.argv[i]);
+            return -1;
+        }
+        convert_to_all(cmd.argv[i], ntype);
     }
     
     list_for_each_entry_safe(p, temp, &g_numList,node) {
@@ -284,6 +323,6 @@ main(int argc, char **argv)
     }
 
     command_free(&cmd);
-    printf("\n");
+    printf("\n\n");
     return 0;
 }

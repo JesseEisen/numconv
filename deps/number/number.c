@@ -69,14 +69,16 @@ is_dec(char *str)
     if(*str == '+' || *str == '-') str++;
     
     //distingush from octal
-    if(*str++ == '0') return FALSE;
+    if(*str == '0') return FALSE;
 
+    if(!isdigit(*str)) return FALSE;
+
+    str++;
     while((c = *str++)) {
         if(!isdigit(c)) {
             return FALSE;
         }
     }
-
     return TRUE;
 }
 
@@ -216,3 +218,29 @@ dec_to_bin(int n)
     return res;
 }
 
+char *
+hex_to_bin(int n)
+{
+    char * temp = malloc(11);
+    char * res = malloc(33);
+    int i, j, dec, index = 0;
+
+    sprintf(temp,"%#X", n);
+
+    for(i = 2; i < 10; i++) 
+    {
+        if(temp[i] >= 'A' && temp[i] <= 'F') {
+            dec = temp[i] - 'A' + 10;
+        } else if(temp[i] >= '0' && temp[i] <= '9') {
+            dec = temp[i] - '0';
+        }
+        index = ((i-1) * 4) - 1;
+        for(j = 0; j < 4; j++)
+        {
+            res[index--] = dec % 2 + '0';
+            dec /= 2;
+        }
+    }
+
+    return res;
+}

@@ -24,5 +24,5 @@ int oct_to_dec(char *);
 int dec_to_dec(char *);
 
 char *dec_to_bin(int);
-
+char *hex_to_bin(int);
 #endif 
