@@ -27,6 +27,7 @@ $ make
     -d, --dec [num]               convert number to unsigned decimal format
     -H, --hex [num]               convert number to hex format
     -o, --oct [num]               convert number to octal format
+    -s, --signed [num]            treat number as signed and set output bits
 ```
 
 Now, it supports to convert several numbers one time. By changing the macro `MAX_NUMBERS` to modify the 

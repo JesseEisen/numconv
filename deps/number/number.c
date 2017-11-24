@@ -225,8 +225,8 @@ hex_to_bin(int n)
     char * res = malloc(33);
     int i, j, dec, index = 0;
 
-    sprintf(temp,"%#X", n);
-
+    sprintf(temp,"%#010X", n);
+  
     for(i = 2; i < 10; i++) 
     {
         if(temp[i] >= 'A' && temp[i] <= 'F') {

@@ -188,6 +188,7 @@ convert_to_bin(char *num, number_type type)
             }
             printf("%c", res[i]);
         }
+        printf("\n");
     }
     else 
     {
